@@ -128,29 +128,6 @@ void applyGravitationalInteraction(System* systems, int numSystems) {
     }
 }
 
-void applyDecoherence(System* systems, int numSystems) {
-    #pragma omp parallel for
-    for (int i = 0; i < numSystems; i++) {
-        if (systems[i].isQuantum) {
-            float localCurvature = 0.0f;
-            for (int j = 0; j < numSystems; j++) {
-                if (i != j) {
-                    float dx = systems[j].x - systems[i].x;
-                    float dy = systems[j].y - systems[i].y;
-                    float dz = systems[j].z - systems[i].z;
-                    float distance = sqrt(dx * dx + dy * dy + dz * dz);
-                    localCurvature += systems[j].mass / (distance * distance);
-                }
-            }
-            systems[i].coherence -= DECOHERENCE_RATE * TIME_STEP * localCurvature;
-            if (systems[i].coherence <= 0.0f) {
-                systems[i].isQuantum = false;
-                systems[i].coherence = 0.0f;
-            }
-        }
-    }
-}
-
 void quantumClassicalFeedback(System* systems, int numSystems) {
     #pragma omp parallel for
     for (int i = 0; i < numSystems; i++) {
@@ -209,7 +186,7 @@ void applyQuantumClassicalCoupling(System* systems, int numSystems) {
                     float dy = systems[j].y - systems[i].y;
                     float dz = systems[j].z - systems[i].z;
                     float distance = sqrt(dx * dx + dy * dy + dz * dz);
-                    float influence = (G * systems[i].mass * systems[j].mass) / (distance * distance * distance);
+                    float influence = (G * systems[i].mass * systems[j].mass) / (distance * distance * distance + 1e-5f); // Avoid division by zero
                     systems[i].vx += influence * dx * systems[j].curvatureInfluence;
                     systems[i].vy += influence * dy * systems[j].curvatureInfluence;
                     systems[i].vz += influence * dz * systems[j].curvatureInfluence;
@@ -219,26 +196,30 @@ void applyQuantumClassicalCoupling(System* systems, int numSystems) {
     }
 }
 
+
 void applyEmergentGravity(System* systems, int numSystems) {
     #pragma omp parallel for
     for (int i = 0; i < numSystems; i++) {
         if (systems[i].isQuantum) {
-            float entropyForce = systems[i].coherence * systems[i].mass * 0.001f;
-            systems[i].vx += entropyForce * systems[i].x;
-            systems[i].vy += entropyForce * systems[i].y;
-            systems[i].vz += entropyForce * systems[i].z;
+            // Instead of pure randomness, base it on system properties
+            float entropyForce = systems[i].coherence * systems[i].mass * 0.001f * systems[i].curvatureInfluence;
+            systems[i].vx += entropyForce * systems[i].x * TIME_STEP;
+            systems[i].vy += entropyForce * systems[i].y * TIME_STEP;
+            systems[i].vz += entropyForce * systems[i].z * TIME_STEP;
         }
     }
 }
+
+
 
 void applyViolentSpacetimeFluctuations(System* systems, int numSystems) {
     #pragma omp parallel for
     for (int i = 0; i < numSystems; i++) {
         if (systems[i].isQuantum) {
             float violentFluctuation = ((float)rand() / RAND_MAX - 0.5) * 2 * CURVATURE_FLUCTUATION_SCALE;
-            systems[i].x += violentFluctuation;
-            systems[i].y += violentFluctuation;
-            systems[i].z += violentFluctuation;
+            systems[i].x += violentFluctuation * TIME_STEP;
+            systems[i].y += violentFluctuation * TIME_STEP;
+            systems[i].z += violentFluctuation * TIME_STEP;
         }
     }
 }
@@ -265,6 +246,129 @@ void applyModifiedDecoherence(System* systems, int numSystems) {
         }
     }
 }
+
+void applyHybridHamiltonian(System* systems, int numSystems) {
+    #pragma omp parallel for
+    for (int i = 0; i < numSystems; i++) {
+        if (systems[i].isQuantum) {
+            for (int j = 0; j < numSystems; j++) {
+                if (i != j) {
+                    float dx = systems[j].x - systems[i].x;
+                    float dy = systems[j].y - systems[i].y;
+                    float dz = systems[j].z - systems[i].z;
+                    float distance = sqrt(dx * dx + dy * dy + dz * dz);
+                    float couplingStrength = (systems[i].mass * systems[j].mass) / (distance * distance);
+                    systems[i].vx += couplingStrength * dx * systems[j].curvatureInfluence * TIME_STEP;
+                    systems[i].vy += couplingStrength * dy * systems[j].curvatureInfluence * TIME_STEP;
+                    systems[i].vz += couplingStrength * dz * systems[j].curvatureInfluence * TIME_STEP;
+                }
+            }
+        }
+    }
+}
+
+
+
+void applyEntropicForce(System* systems, int numSystems) {
+    #pragma omp parallel for
+    for (int i = 0; i < numSystems; i++) {
+        if (systems[i].isQuantum) {
+            float entropyForce = systems[i].coherence * systems[i].mass * 0.001f * (rand() / (float)RAND_MAX);
+            systems[i].vx += entropyForce * systems[i].x * TIME_STEP;
+            systems[i].vy += entropyForce * systems[i].y * TIME_STEP;
+            systems[i].vz += entropyForce * systems[i].z * TIME_STEP;
+        }
+    }
+}
+
+
+void applyCSLDecoherence(System* systems, int numSystems) {
+    #pragma omp parallel for
+    for (int i = 0; i < numSystems; i++) {
+        if (systems[i].isQuantum) {
+            float localCurvature = 0.0f;
+            for (int j = 0; j < numSystems; j++) {
+                if (i != j) {
+                    float dx = systems[j].x - systems[i].x;
+                    float dy = systems[j].y - systems[i].y;
+                    float dz = systems[j].z - systems[i].z;
+                    float distance = sqrt(dx * dx + dy * dy + dz * dz);
+                    localCurvature += systems[j].mass / (distance * distance + 1e-5f); // Avoid division by zero
+                }
+            }
+            float collapseProbability = DECOHERENCE_RATE * TIME_STEP * localCurvature;
+            if (((float)rand() / RAND_MAX) < collapseProbability) {
+                systems[i].isQuantum = false;
+                systems[i].coherence = 0.0f;
+            } else {
+                systems[i].coherence -= collapseProbability;
+                if (systems[i].coherence < 0.0f) systems[i].coherence = 0.0f; // Ensure coherence doesn't go negative
+            }
+        }
+    }
+}
+
+
+
+
+
+void ensureContinuousEnergyConservation(System* systems, int numSystems) {
+    float newTotalEnergy = 0.0f;
+    for (int i = 0; i < numSystems; i++) {
+        float kineticEnergy = 0.5f * systems[i].mass * (systems[i].vx * systems[i].vx + systems[i].vy * systems[i].vy + systems[i].vz * systems[i].vz);
+        newTotalEnergy += kineticEnergy;
+        for (int j = i + 1; j < numSystems; j++) {
+            float dx = systems[j].x - systems[i].x;
+            float dy = systems[j].y - systems[i].y;
+            float dz = systems[j].z - systems[i].z;
+            float distance = sqrt(dx * dx + dy * dy + dz * dz);
+            if (distance > 0.01f) {
+                float potentialEnergy = -G * systems[i].mass * systems[j].mass / distance;
+                newTotalEnergy += potentialEnergy;
+            }
+        }
+    }
+    float energyCorrection = (totalEnergy - newTotalEnergy) / numSystems * 0.1f; // Adjust correction factor to 0.1f
+    for (int i = 0; i < numSystems; i++) {
+        systems[i].vx += energyCorrection / systems[i].mass; // Adjust based on mass
+        systems[i].vy += energyCorrection / systems[i].mass;
+        systems[i].vz += energyCorrection / systems[i].mass;
+    }
+    totalEnergy = newTotalEnergy;
+}
+
+
+
+
+void applyPathIntegralDynamics(System* systems, int numSystems) {
+    #pragma omp parallel for
+    for (int i = 0; i < numSystems; i++) {
+        if (systems[i].isQuantum) {
+            float action = 0.0f;
+            for (int j = 0; j < numSystems; j++) {
+                if (i != j) {
+                    float dx = systems[j].x - systems[i].x;
+                    float dy = systems[j].y - systems[i].y;
+                    float dz = systems[j].z - systems[i].z;
+                    float distance = sqrt(dx * dx + dy * dy + dz * dz);
+                    float potentialEnergy = -G * systems[i].mass * systems[j].mass / distance;
+                    action += potentialEnergy * TIME_STEP;
+                }
+            }
+            systems[i].vx += action * systems[i].x * TIME_STEP;
+            systems[i].vy += action * systems[i].y * TIME_STEP;
+            systems[i].vz += action * systems[i].z * TIME_STEP;
+            
+            // Consolidating violent fluctuations
+            float violentFluctuation = ((float)rand() / RAND_MAX - 0.5) * 2 * CURVATURE_FLUCTUATION_SCALE;
+            systems[i].x += violentFluctuation * TIME_STEP;
+            systems[i].y += violentFluctuation * TIME_STEP;
+            systems[i].z += violentFluctuation * TIME_STEP;
+        }
+    }
+}
+
+
 
 void display(void) {
     static bool initialized = false;
@@ -300,14 +404,14 @@ void display(void) {
     applySpacetimeFluctuations(systems, numSystems);
     applyStochasticCurvatureFluctuations(systems, numSystems);
     applyGravitationalInteraction(systems, numSystems);
-    applyDecoherence(systems, numSystems);
+    applyCSLDecoherence(systems, numSystems);
     quantumClassicalFeedback(systems, numSystems);
-    applyQuantumClassicalCoupling(systems, numSystems);
+    applyHybridHamiltonian(systems, numSystems);
     applyEmergentGravity(systems, numSystems);
     applyViolentSpacetimeFluctuations(systems, numSystems);
-    applyModifiedDecoherence(systems, numSystems);
+    applyPathIntegralDynamics(systems, numSystems);
     updateSystems(systems, numSystems);
-    ensureEnergyConservation(systems, numSystems);
+    ensureContinuousEnergyConservation(systems, numSystems);
 
     for (int i = 0; i < numSystems; i++) {
         drawPoint(systems[i]);
@@ -316,6 +420,8 @@ void display(void) {
     glutSwapBuffers();
     glutPostRedisplay();
 }
+
+
 
 void reshape(int w, int h) {
     glViewport(0, 0, (GLsizei)w, (GLsizei)h);
