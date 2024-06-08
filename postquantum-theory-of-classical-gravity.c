@@ -14,10 +14,10 @@
 #define NUM_QUANTUM_SYSTEMS 1000
 #define G 0.001f
 #define TIME_STEP 1.0f
-#define INITIAL_SPACETIME_FLUCTUATION_SCALE 1e-5f
+#define INITIAL_SPACETIME_FLUCTUATION_SCALE 1e-8f
 #define DECOHERENCE_RATE 0.01f
 #define MASS_FACTOR 1.0f
-#define CURVATURE_FLUCTUATION_SCALE 1e-6f
+#define CURVATURE_FLUCTUATION_SCALE 1e-9f
 
 typedef struct {
     float x, y, z;
@@ -46,12 +46,14 @@ void drawPoint(System s) {
     glTranslatef(s.x, s.y, s.z);
     if (s.isQuantum) {
         glColor3f(0.0, 1.0, 0.0);
+        glutSolidSphere(0.1, 10, 10);
     } else {
         glColor3f(1.0, 0.0, 0.0);
+        glutSolidCube(0.2);  // Different shape for classical systems
     }
-    glutSolidSphere(0.1, 10, 10);
     glPopMatrix();
 }
+
 
 void initializeSystems(void) {
     systems = (System*)malloc(NUM_QUANTUM_SYSTEMS * sizeof(System));
@@ -116,7 +118,8 @@ void applyGravitationalInteraction(System* systems, int numSystems) {
                 float dz = systems[j].z - systems[i].z;
                 float distance = sqrt(dx * dx + dy * dy + dz * dz);
                 if (distance > 0.01f) {
-                    float force = (G * systems[i].mass * systems[j].mass) / (distance * distance);
+                    // Incorporate relativistic corrections
+                    float force = (G * systems[i].mass * systems[j].mass) / (distance * distance * (1.0f + 0.5f * (systems[i].vx * systems[i].vx + systems[i].vy * systems[i].vy + systems[i].vz * systems[i].vz) / (distance * distance)));
                     fx += force * dx / distance;
                     fy += force * dy / distance;
                     fz += force * dz / distance;
@@ -129,6 +132,7 @@ void applyGravitationalInteraction(System* systems, int numSystems) {
         systems[i].vz += fz * TIME_STEP / systems[i].mass;
     }
 }
+
 
 void quantumClassicalFeedback(System* systems, int numSystems) {
     #pragma omp parallel for
@@ -299,7 +303,7 @@ void applyCSLDecoherence(System* systems, int numSystems) {
                     float dy = systems[j].y - systems[i].y;
                     float dz = systems[j].z - systems[i].z;
                     float distance = sqrt(dx * dx + dy * dy + dz * dz);
-                    localCurvature += systems[j].mass / (distance * distance + 1e-5f); // Precision in calculation
+                    localCurvature += systems[j].mass / (distance * distance + 1e-5f);
                 }
             }
             float collapseProbability = DECOHERENCE_RATE * TIME_STEP * localCurvature;
@@ -307,12 +311,13 @@ void applyCSLDecoherence(System* systems, int numSystems) {
                 systems[i].isQuantum = false;
                 systems[i].coherence = 0.0f;
             } else {
-                systems[i].coherence -= collapseProbability;
-                if (systems[i].coherence < 0.0f) systems[i].coherence = 0.0f; // Ensure coherence doesn't go negative
+                systems[i].coherence -= collapseProbability * 0.1f; // Adjusting coherence reduction rate
+                if (systems[i].coherence < 0.0f) systems[i].coherence = 0.0f;
             }
         }
     }
 }
+
 
 
 
@@ -491,7 +496,13 @@ void mouseMotion(int x, int y) {
 }
 
 
+void cleanup(void) {
+    free(systems);
+}
+
 int main(int argc, char **argv) {
+    atexit(cleanup);  // Register cleanup function to be called at exit
+
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
     glutInitWindowSize(800, 600);
