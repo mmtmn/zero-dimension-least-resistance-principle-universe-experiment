@@ -1,5 +1,6 @@
 # multi dimensional (c)
-
+gcc -o multi-dimensional multi-dimensional.c -lGL -lGLU -lglut -lm
+./multi-dimensional
 
 ## multi dimensional view (outside view)
 ![image](https://github.com/mmtmn/zero-dimension-least-resistance-principle-universe-experiment/assets/42742390/e2804a69-54c1-4086-8492-6f29a843d55e)
@@ -37,9 +38,8 @@
 ### warning:
 - reduce number of points or depth if the program hangs after executing it
 
-## how to run multi.c
-gcc -o multi-dimensional multi-dimensional.c -lGL -lGLU -lglut -lm
-./multi-dimensional
+
+
 
 # 2d view (python)
 ![image](https://github.com/mmtmn/zero-dimension-least-resistance-principle-universe-experiment/assets/42742390/dd95bbf7-b2dc-4d2e-ab04-9cb548d440bf)
