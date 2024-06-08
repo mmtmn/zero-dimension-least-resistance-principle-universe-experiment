@@ -13,10 +13,11 @@
 
 #define NUM_QUANTUM_SYSTEMS 1000
 #define G 0.001f
-#define TIME_STEP 0.01f
+#define TIME_STEP 1.0f
 #define INITIAL_SPACETIME_FLUCTUATION_SCALE 1e-5f
 #define DECOHERENCE_RATE 0.01f
 #define MASS_FACTOR 1.0f
+#define CURVATURE_FLUCTUATION_SCALE 1e-6f
 
 typedef struct {
     float x, y, z;
@@ -24,6 +25,7 @@ typedef struct {
     bool isQuantum;
     float coherence;
     float mass;
+    float curvatureInfluence;
 } System;
 
 float cameraX = 0.0f, cameraY = 0.0f, cameraZ = 50.0f;
@@ -31,6 +33,7 @@ float cameraYaw = 0.0f, cameraPitch = 0.0f;
 float speed = 0.1f;
 System* systems = NULL;
 int numSystems = 0;
+float totalEnergy = 0.0f;
 
 void init(void) {
     glClearColor(0.0, 0.0, 0.0, 0.0);
@@ -64,8 +67,9 @@ void initializeSystems(void) {
         bool isQuantum = (rand() % 2) == 0;
         float coherence = 1.0f;
         float mass = ((float)rand() / RAND_MAX) * MASS_FACTOR;
+        float curvatureInfluence = 0.0f;
 
-        System s = {x, y, z, vx, vy, vz, isQuantum, coherence, mass};
+        System s = {x, y, z, vx, vy, vz, isQuantum, coherence, mass, curvatureInfluence};
         systems[numSystems++] = s;
     }
 }
@@ -81,6 +85,20 @@ void applySpacetimeFluctuations(System* systems, int numSystems) {
         }
     }
 }
+
+void applyStochasticCurvatureFluctuations(System* systems, int numSystems) {
+    #pragma omp parallel for
+    for (int i = 0; i < numSystems; i++) {
+        if (systems[i].isQuantum) {
+            systems[i].curvatureInfluence += ((float)rand() / RAND_MAX - 0.5) * CURVATURE_FLUCTUATION_SCALE;
+            float fluctuationScale = INITIAL_SPACETIME_FLUCTUATION_SCALE * systems[i].mass;
+            systems[i].x += ((float)rand() / RAND_MAX - 0.5) * fluctuationScale * 0.1f; // Reduce fluctuation impact
+            systems[i].y += ((float)rand() / RAND_MAX - 0.5) * fluctuationScale * 0.1f;
+            systems[i].z += ((float)rand() / RAND_MAX - 0.5) * fluctuationScale * 0.1f;
+        }
+    }
+}
+
 
 void applyGravitationalInteraction(System* systems, int numSystems) {
     #pragma omp parallel for
@@ -133,6 +151,19 @@ void applyDecoherence(System* systems, int numSystems) {
     }
 }
 
+void quantumClassicalFeedback(System* systems, int numSystems) {
+    #pragma omp parallel for
+    for (int i = 0; i < numSystems; i++) {
+        if (systems[i].isQuantum) {
+            float curvatureChange = systems[i].coherence * 0.01f; // Reduce influence change rate
+            systems[i].curvatureInfluence += curvatureChange;
+            if (systems[i].curvatureInfluence > 1.0f) systems[i].curvatureInfluence = 1.0f; // Cap the influence
+            if (systems[i].curvatureInfluence < -1.0f) systems[i].curvatureInfluence = -1.0f;
+        }
+    }
+}
+
+
 void updateSystems(System* systems, int numSystems) {
     #pragma omp parallel for
     for (int i = 0; i < numSystems; i++) {
@@ -142,11 +173,53 @@ void updateSystems(System* systems, int numSystems) {
     }
 }
 
+void ensureEnergyConservation(System* systems, int numSystems) {
+    float newTotalEnergy = 0.0f;
+    for (int i = 0; i < numSystems; i++) {
+        float kineticEnergy = 0.5f * systems[i].mass * (systems[i].vx * systems[i].vx + systems[i].vy * systems[i].vy + systems[i].vz * systems[i].vz);
+        newTotalEnergy += kineticEnergy;
+        for (int j = i + 1; j < numSystems; j++) {
+            float dx = systems[j].x - systems[i].x;
+            float dy = systems[j].y - systems[i].y;
+            float dz = systems[j].z - systems[i].z;
+            float distance = sqrt(dx * dx + dy * dy + dz * dz);
+            if (distance > 0.01f) {
+                float potentialEnergy = -G * systems[i].mass * systems[j].mass / distance;
+                newTotalEnergy += potentialEnergy;
+            }
+        }
+    }
+    float energyCorrection = (totalEnergy - newTotalEnergy) / numSystems * 0.1f; // Reduce correction factor
+    for (int i = 0; i < numSystems; i++) {
+        systems[i].vx += energyCorrection / systems[i].mass; // Adjust based on mass
+        systems[i].vy += energyCorrection / systems[i].mass;
+        systems[i].vz += energyCorrection / systems[i].mass;
+    }
+    totalEnergy = newTotalEnergy;
+}
+
+
 void display(void) {
     static bool initialized = false;
 
     if (!initialized) {
         initializeSystems();
+        for (int i = 0; i < numSystems; i++) {
+            float kineticEnergy = 0.5f * systems[i].mass * (systems[i].vx * systems[i].vx + systems[i].vy * systems[i].vy + systems[i].vz * systems[i].vz);
+            totalEnergy += kineticEnergy;
+            for (int j = i + 1; j < numSystems; j++) {
+                float dx = systems[j].
+
+x - systems[i].x;
+                float dy = systems[j].y - systems[i].y;
+                float dz = systems[j].z - systems[i].z;
+                float distance = sqrt(dx * dx + dy * dy + dz * dz);
+                if (distance > 0.01f) {
+                    float potentialEnergy = -G * systems[i].mass * systems[j].mass / distance;
+                    totalEnergy += potentialEnergy;
+                }
+            }
+        }
         initialized = true;
     }
 
@@ -160,9 +233,12 @@ void display(void) {
               0.0, 1.0, 0.0);
 
     applySpacetimeFluctuations(systems, numSystems);
+    applyStochasticCurvatureFluctuations(systems, numSystems);
     applyGravitationalInteraction(systems, numSystems);
     applyDecoherence(systems, numSystems);
+    quantumClassicalFeedback(systems, numSystems);
     updateSystems(systems, numSystems);
+    ensureEnergyConservation(systems, numSystems);
 
     for (int i = 0; i < numSystems; i++) {
         drawPoint(systems[i]);
@@ -230,47 +306,6 @@ void mouseMotion(int x, int y) {
     glutWarpPointer(400, 300);
 
     glutPostRedisplay();
-}
-
-void applyStochasticDifferentialEquations(System* systems, int numSystems) {
-    #pragma omp parallel for
-    for (int i = 0; i < numSystems; i++) {
-        float dwx = ((float)rand() / RAND_MAX - 0.5) * sqrt(TIME_STEP);
-        float dwy = ((float)rand() / RAND_MAX - 0.5) * sqrt(TIME_STEP);
-        float dwz = ((float)rand() / RAND_MAX - 0.5) * sqrt(TIME_STEP);
-        systems[i].vx += dwx;
-        systems[i].vy += dwy;
-        systems[i].vz += dwz;
-    }
-}
-
-void applyMeasurementFeedback(System* systems, int numSystems) {
-    #pragma omp parallel for
-    for (int i = 0; i < numSystems; i++) {
-        float feedback = systems[i].coherence * 0.1f;
-        systems[i].vx += feedback * systems[i].x;
-        systems[i].vy += feedback * systems[i].y;
-        systems[i].vz += feedback * systems[i].z;
-    }
-}
-
-void ensureEnergyConservation(System* systems, int numSystems) {
-    float totalEnergy = 0.0f;
-    for (int i = 0; i < numSystems; i++) {
-        float kineticEnergy = 0.5f * systems[i].mass * (systems[i].vx * systems[i].vx + systems[i].vy * systems[i].vy + systems[i].vz * systems[i].vz);
-        totalEnergy += kineticEnergy;
-        for (int j = i + 1; j < numSystems; j++) {
-            float dx = systems[j].x - systems[i].x;
-            float dy = systems[j].y - systems[i].y;
-            float dz = systems[j].z - systems[i].z;
-            float distance = sqrt(dx * dx + dy * dy + dz * dz);
-            if (distance > 0.01f) {
-                float potentialEnergy = -G * systems[i].mass * systems[j].mass / distance;
-                totalEnergy += potentialEnergy;
-            }
-        }
-    }
-    printf("Total Energy: %f\n", totalEnergy);
 }
 
 int main(int argc, char **argv) {
