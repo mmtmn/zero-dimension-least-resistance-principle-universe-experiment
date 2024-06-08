@@ -10,6 +10,8 @@ gcc -o multi-dimensional multi-dimensional.c -lGL -lGLU -lglut -lm
 
 # multi dimensional view (inside view)
 ![image](https://github.com/mmtmn/zero-dimension-least-resistance-principle-universe-experiment/assets/42742390/f6b24ee4-ac0b-4a4a-86a6-03112936adbf)
+![image](https://github.com/mmtmn/zero-dimension-least-resistance-principle-universe-experiment/assets/42742390/effa6459-16e3-43d2-9072-af338edd1c28)
+
 
 
 # 2d view (python)
