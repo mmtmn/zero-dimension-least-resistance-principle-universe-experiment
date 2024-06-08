@@ -9,4 +9,4 @@
 # multi dimensional view
 ![image](https://github.com/mmtmn/zero-dimension-least-resistance-principle-universe-experiment/assets/42742390/19b13954-5863-4cbe-aa1b-c9c1869f6622)
 ![image](https://github.com/mmtmn/zero-dimension-least-resistance-principle-universe-experiment/assets/42742390/a9c6833e-25b4-42bd-bf3e-069f11c9a46a)
-[Screencast from 2024-06-07 21-05-07.webm](https://github.com/mmtmn/zero-dimension-least-resistance-principle-universe-experiment/assets/42742390/b2a16bcb-915a-4c26-8b5c-24c03c1c30eb)
+
