@@ -1,22 +1,22 @@
-# multi dimensional (c)
+# multi-dimensional.c
 - gcc -o multi-dimensional-no-gravity multi-dimensional-no-gravity.c -lGL -lGLU -lglut -lm
 - ./multi-dimensional-no-gravity
 
-## multi dimensional view (outside view) (no gravity)
+## multi dimensional view (outside view)
 ![image](https://github.com/mmtmn/zero-dimension-least-resistance-principle-universe-experiment/assets/42742390/e2804a69-54c1-4086-8492-6f29a843d55e)
 ![image](https://github.com/mmtmn/zero-dimension-least-resistance-principle-universe-experiment/assets/42742390/971f8550-9e4a-4b1a-a417-9c7892b0e6bc)
 ![image](https://github.com/mmtmn/zero-dimension-least-resistance-principle-universe-experiment/assets/42742390/fe63eb0d-d32d-442f-9ba2-9a5bb9254e17)
 
-## multi dimensional view (inside view) (no gravity)
+## multi dimensional view (inside view)
 
 
-### more depth, less points (no gravity)
+### more depth, less points
 
 
 ![image](https://github.com/mmtmn/zero-dimension-least-resistance-principle-universe-experiment/assets/42742390/f6b24ee4-ac0b-4a4a-86a6-03112936adbf)
 
 
-### less depth, more points (no gravity)
+### less depth, more points
 
 
 ![image](https://github.com/mmtmn/zero-dimension-least-resistance-principle-universe-experiment/assets/42742390/effa6459-16e3-43d2-9072-af338edd1c28)
@@ -38,7 +38,15 @@
 - reduce number of points or depth if the program hangs after executing it
 
 
-# with gravity
+# Files in the bin folder!
+
+Containes 2d attempt in python, multi-dimensional with gravity and a post quantum theory by Jonathan Oppenheim. 
+
+- The python attempt was interesting, but not what I was looking for to achieve here
+- the gravity version didn't make too much sense to me, which led me to the post quantum theory
+- the post quantum theory led me to create a separate repo, which had some cool and interesting results, the version on this repo is the precursor to that repository, which attempts to properly follow the research paper and what is proposed there!
+
+# multi dimensional.c with gravity
 ![image](https://github.com/mmtmn/zero-dimension-least-resistance-principle-universe-experiment/assets/42742390/df021ac3-9e75-47a7-aab8-ff7f59d2936e)
 - gcc -o multi-dimensional-with-gravity multi-dimensional-with-gravity.c -lGL -lGLU -lglut -lm
 - ./multi-dimensional-with-gravity
