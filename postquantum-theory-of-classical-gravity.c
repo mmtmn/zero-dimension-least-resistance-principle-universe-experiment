@@ -199,6 +199,73 @@ void ensureEnergyConservation(System* systems, int numSystems) {
 }
 
 
+void applyQuantumClassicalCoupling(System* systems, int numSystems) {
+    #pragma omp parallel for
+    for (int i = 0; i < numSystems; i++) {
+        if (systems[i].isQuantum) {
+            for (int j = 0; j < numSystems; j++) {
+                if (i != j) {
+                    float dx = systems[j].x - systems[i].x;
+                    float dy = systems[j].y - systems[i].y;
+                    float dz = systems[j].z - systems[i].z;
+                    float distance = sqrt(dx * dx + dy * dy + dz * dz);
+                    float influence = (G * systems[i].mass * systems[j].mass) / (distance * distance * distance);
+                    systems[i].vx += influence * dx * systems[j].curvatureInfluence;
+                    systems[i].vy += influence * dy * systems[j].curvatureInfluence;
+                    systems[i].vz += influence * dz * systems[j].curvatureInfluence;
+                }
+            }
+        }
+    }
+}
+
+void applyEmergentGravity(System* systems, int numSystems) {
+    #pragma omp parallel for
+    for (int i = 0; i < numSystems; i++) {
+        if (systems[i].isQuantum) {
+            float entropyForce = systems[i].coherence * systems[i].mass * 0.001f;
+            systems[i].vx += entropyForce * systems[i].x;
+            systems[i].vy += entropyForce * systems[i].y;
+            systems[i].vz += entropyForce * systems[i].z;
+        }
+    }
+}
+
+void applyViolentSpacetimeFluctuations(System* systems, int numSystems) {
+    #pragma omp parallel for
+    for (int i = 0; i < numSystems; i++) {
+        if (systems[i].isQuantum) {
+            float violentFluctuation = ((float)rand() / RAND_MAX - 0.5) * 2 * CURVATURE_FLUCTUATION_SCALE;
+            systems[i].x += violentFluctuation;
+            systems[i].y += violentFluctuation;
+            systems[i].z += violentFluctuation;
+        }
+    }
+}
+
+void applyModifiedDecoherence(System* systems, int numSystems) {
+    #pragma omp parallel for
+    for (int i = 0; i < numSystems; i++) {
+        if (systems[i].isQuantum) {
+            float localCurvature = 0.0f;
+            for (int j = 0; j < numSystems; j++) {
+                if (i != j) {
+                    float dx = systems[j].x - systems[i].x;
+                    float dy = systems[j].y - systems[i].y;
+                    float dz = systems[j].z - systems[i].z;
+                    float distance = sqrt(dx * dx + dy * dy + dz * dz);
+                    localCurvature += systems[j].mass / (distance * distance);
+                }
+            }
+            systems[i].coherence -= DECOHERENCE_RATE * TIME_STEP * localCurvature;
+            if (systems[i].coherence <= 0.0f) {
+                systems[i].isQuantum = false;
+                systems[i].coherence = 0.0f;
+            }
+        }
+    }
+}
+
 void display(void) {
     static bool initialized = false;
 
@@ -208,9 +275,7 @@ void display(void) {
             float kineticEnergy = 0.5f * systems[i].mass * (systems[i].vx * systems[i].vx + systems[i].vy * systems[i].vy + systems[i].vz * systems[i].vz);
             totalEnergy += kineticEnergy;
             for (int j = i + 1; j < numSystems; j++) {
-                float dx = systems[j].
-
-x - systems[i].x;
+                float dx = systems[j].x - systems[i].x;
                 float dy = systems[j].y - systems[i].y;
                 float dz = systems[j].z - systems[i].z;
                 float distance = sqrt(dx * dx + dy * dy + dz * dz);
@@ -237,6 +302,10 @@ x - systems[i].x;
     applyGravitationalInteraction(systems, numSystems);
     applyDecoherence(systems, numSystems);
     quantumClassicalFeedback(systems, numSystems);
+    applyQuantumClassicalCoupling(systems, numSystems);
+    applyEmergentGravity(systems, numSystems);
+    applyViolentSpacetimeFluctuations(systems, numSystems);
+    applyModifiedDecoherence(systems, numSystems);
     updateSystems(systems, numSystems);
     ensureEnergyConservation(systems, numSystems);
 
@@ -307,6 +376,7 @@ void mouseMotion(int x, int y) {
 
     glutPostRedisplay();
 }
+
 
 int main(int argc, char **argv) {
     glutInit(&argc, argv);
