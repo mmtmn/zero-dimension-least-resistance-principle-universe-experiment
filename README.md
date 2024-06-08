@@ -27,15 +27,15 @@
 - less points = more web like view
 
 
-control commands:
+### control commands:
 - awsd to move
 - move mouse to rotate
 - q goes down
 - e goes up
 
 
-warning:
-reduce number of points or depth if the program hangs after executing it
+### warning:
+- reduce number of points or depth if the program hangs after executing it
 
 ## how to run multi.c
 gcc -o multi-dimensional multi-dimensional.c -lGL -lGLU -lglut -lm
