@@ -23,21 +23,15 @@
 
 
 ## observations of multi-dimensional.c
-
-more points = more spherical
-
-less points = more web like view
+- more points = more spherical
+- less points = more web like view
 
 
 control commands:
-
-awsd to move
-
-move mouse to rotate
-
-q goes down
-
-e goes up
+- awsd to move
+- move mouse to rotate
+- q goes down
+- e goes up
 
 
 warning:
