@@ -38,6 +38,11 @@
 - reduce number of points or depth if the program hangs after executing it
 
 
+# with gravity
+![image](https://github.com/mmtmn/zero-dimension-least-resistance-principle-universe-experiment/assets/42742390/df021ac3-9e75-47a7-aab8-ff7f59d2936e)
+- to run without gravity make sure to go back to the commit that comes before "adding gravity"
+
+
 
 
 # 2d view (python)
