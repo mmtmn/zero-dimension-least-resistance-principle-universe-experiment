@@ -92,12 +92,14 @@ void applyStochasticCurvatureFluctuations(System* systems, int numSystems) {
         if (systems[i].isQuantum) {
             systems[i].curvatureInfluence += ((float)rand() / RAND_MAX - 0.5) * CURVATURE_FLUCTUATION_SCALE;
             float fluctuationScale = INITIAL_SPACETIME_FLUCTUATION_SCALE * systems[i].mass;
-            systems[i].x += ((float)rand() / RAND_MAX - 0.5) * fluctuationScale * 0.1f; // Reduce fluctuation impact
-            systems[i].y += ((float)rand() / RAND_MAX - 0.5) * fluctuationScale * 0.1f;
-            systems[i].z += ((float)rand() / RAND_MAX - 0.5) * fluctuationScale * 0.1f;
+            // Reduced fluctuation impact to a more physically meaningful scale
+            systems[i].x += ((float)rand() / RAND_MAX - 0.5) * fluctuationScale * 0.05f; 
+            systems[i].y += ((float)rand() / RAND_MAX - 0.5) * fluctuationScale * 0.05f;
+            systems[i].z += ((float)rand() / RAND_MAX - 0.5) * fluctuationScale * 0.05f;
         }
     }
 }
+
 
 
 void applyGravitationalInteraction(System* systems, int numSystems) {
@@ -186,6 +188,7 @@ void applyQuantumClassicalCoupling(System* systems, int numSystems) {
                     float dy = systems[j].y - systems[i].y;
                     float dz = systems[j].z - systems[i].z;
                     float distance = sqrt(dx * dx + dy * dy + dz * dz);
+                    // Interaction term with normalization to avoid singularity
                     float influence = (G * systems[i].mass * systems[j].mass) / (distance * distance * distance + 1e-5f); // Avoid division by zero
                     systems[i].vx += influence * dx * systems[j].curvatureInfluence;
                     systems[i].vy += influence * dy * systems[j].curvatureInfluence;
@@ -197,11 +200,12 @@ void applyQuantumClassicalCoupling(System* systems, int numSystems) {
 }
 
 
+
 void applyEmergentGravity(System* systems, int numSystems) {
     #pragma omp parallel for
     for (int i = 0; i < numSystems; i++) {
         if (systems[i].isQuantum) {
-            // Instead of pure randomness, base it on system properties
+            // Use curvature influence and coherence
             float entropyForce = systems[i].coherence * systems[i].mass * 0.001f * systems[i].curvatureInfluence;
             systems[i].vx += entropyForce * systems[i].x * TIME_STEP;
             systems[i].vy += entropyForce * systems[i].y * TIME_STEP;
@@ -209,6 +213,7 @@ void applyEmergentGravity(System* systems, int numSystems) {
         }
     }
 }
+
 
 
 
@@ -257,7 +262,7 @@ void applyHybridHamiltonian(System* systems, int numSystems) {
                     float dy = systems[j].y - systems[i].y;
                     float dz = systems[j].z - systems[i].z;
                     float distance = sqrt(dx * dx + dy * dy + dz * dz);
-                    float couplingStrength = (systems[i].mass * systems[j].mass) / (distance * distance);
+                    float couplingStrength = (systems[i].mass * systems[j].mass) / (distance * distance * distance + 1e-5f); // Normalized interaction term
                     systems[i].vx += couplingStrength * dx * systems[j].curvatureInfluence * TIME_STEP;
                     systems[i].vy += couplingStrength * dy * systems[j].curvatureInfluence * TIME_STEP;
                     systems[i].vz += couplingStrength * dz * systems[j].curvatureInfluence * TIME_STEP;
@@ -266,6 +271,7 @@ void applyHybridHamiltonian(System* systems, int numSystems) {
         }
     }
 }
+
 
 
 
@@ -293,7 +299,7 @@ void applyCSLDecoherence(System* systems, int numSystems) {
                     float dy = systems[j].y - systems[i].y;
                     float dz = systems[j].z - systems[i].z;
                     float distance = sqrt(dx * dx + dy * dy + dz * dz);
-                    localCurvature += systems[j].mass / (distance * distance + 1e-5f); // Avoid division by zero
+                    localCurvature += systems[j].mass / (distance * distance + 1e-5f); // Precision in calculation
                 }
             }
             float collapseProbability = DECOHERENCE_RATE * TIME_STEP * localCurvature;
@@ -307,6 +313,7 @@ void applyCSLDecoherence(System* systems, int numSystems) {
         }
     }
 }
+
 
 
 
