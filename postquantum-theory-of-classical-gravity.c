@@ -11,17 +11,19 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-#define NUM_QUANTUM_SYSTEMS 10000
+#define NUM_QUANTUM_SYSTEMS 1000
 #define G 0.001f
 #define TIME_STEP 0.01f
-#define SPACETIME_FLUCTUATION_SCALE 1e-5f
+#define INITIAL_SPACETIME_FLUCTUATION_SCALE 1e-5f
 #define DECOHERENCE_RATE 0.01f
+#define MASS_FACTOR 1.0f
 
 typedef struct {
     float x, y, z;
     float vx, vy, vz;
     bool isQuantum;
     float coherence;
+    float mass;
 } System;
 
 float cameraX = 0.0f, cameraY = 0.0f, cameraZ = 50.0f;
@@ -61,8 +63,9 @@ void initializeSystems(void) {
 
         bool isQuantum = (rand() % 2) == 0;
         float coherence = 1.0f;
+        float mass = ((float)rand() / RAND_MAX) * MASS_FACTOR;
 
-        System s = {x, y, z, vx, vy, vz, isQuantum, coherence};
+        System s = {x, y, z, vx, vy, vz, isQuantum, coherence, mass};
         systems[numSystems++] = s;
     }
 }
@@ -71,9 +74,10 @@ void applySpacetimeFluctuations(System* systems, int numSystems) {
     #pragma omp parallel for
     for (int i = 0; i < numSystems; i++) {
         if (systems[i].isQuantum) {
-            systems[i].x += ((float)rand() / RAND_MAX - 0.5) * SPACETIME_FLUCTUATION_SCALE;
-            systems[i].y += ((float)rand() / RAND_MAX - 0.5) * SPACETIME_FLUCTUATION_SCALE;
-            systems[i].z += ((float)rand() / RAND_MAX - 0.5) * SPACETIME_FLUCTUATION_SCALE;
+            float fluctuationScale = INITIAL_SPACETIME_FLUCTUATION_SCALE * systems[i].mass;
+            systems[i].x += ((float)rand() / RAND_MAX - 0.5) * fluctuationScale;
+            systems[i].y += ((float)rand() / RAND_MAX - 0.5) * fluctuationScale;
+            systems[i].z += ((float)rand() / RAND_MAX - 0.5) * fluctuationScale;
         }
     }
 }
@@ -92,17 +96,17 @@ void applyGravitationalInteraction(System* systems, int numSystems) {
                 float dz = systems[j].z - systems[i].z;
                 float distance = sqrt(dx * dx + dy * dy + dz * dz);
                 if (distance > 0.01f) {
-                    float force = (G / (distance * distance)) * (1.0f / distance);
-                    fx += force * dx;
-                    fy += force * dy;
-                    fz += force * dz;
+                    float force = (G * systems[i].mass * systems[j].mass) / (distance * distance);
+                    fx += force * dx / distance;
+                    fy += force * dy / distance;
+                    fz += force * dz / distance;
                 }
             }
         }
 
-        systems[i].vx += fx * TIME_STEP;
-        systems[i].vy += fy * TIME_STEP;
-        systems[i].vz += fz * TIME_STEP;
+        systems[i].vx += fx * TIME_STEP / systems[i].mass;
+        systems[i].vy += fy * TIME_STEP / systems[i].mass;
+        systems[i].vz += fz * TIME_STEP / systems[i].mass;
     }
 }
 
@@ -110,7 +114,17 @@ void applyDecoherence(System* systems, int numSystems) {
     #pragma omp parallel for
     for (int i = 0; i < numSystems; i++) {
         if (systems[i].isQuantum) {
-            systems[i].coherence -= DECOHERENCE_RATE * TIME_STEP;
+            float localCurvature = 0.0f;
+            for (int j = 0; j < numSystems; j++) {
+                if (i != j) {
+                    float dx = systems[j].x - systems[i].x;
+                    float dy = systems[j].y - systems[i].y;
+                    float dz = systems[j].z - systems[i].z;
+                    float distance = sqrt(dx * dx + dy * dy + dz * dz);
+                    localCurvature += systems[j].mass / (distance * distance);
+                }
+            }
+            systems[i].coherence -= DECOHERENCE_RATE * TIME_STEP * localCurvature;
             if (systems[i].coherence <= 0.0f) {
                 systems[i].isQuantum = false;
                 systems[i].coherence = 0.0f;
@@ -216,6 +230,47 @@ void mouseMotion(int x, int y) {
     glutWarpPointer(400, 300);
 
     glutPostRedisplay();
+}
+
+void applyStochasticDifferentialEquations(System* systems, int numSystems) {
+    #pragma omp parallel for
+    for (int i = 0; i < numSystems; i++) {
+        float dwx = ((float)rand() / RAND_MAX - 0.5) * sqrt(TIME_STEP);
+        float dwy = ((float)rand() / RAND_MAX - 0.5) * sqrt(TIME_STEP);
+        float dwz = ((float)rand() / RAND_MAX - 0.5) * sqrt(TIME_STEP);
+        systems[i].vx += dwx;
+        systems[i].vy += dwy;
+        systems[i].vz += dwz;
+    }
+}
+
+void applyMeasurementFeedback(System* systems, int numSystems) {
+    #pragma omp parallel for
+    for (int i = 0; i < numSystems; i++) {
+        float feedback = systems[i].coherence * 0.1f;
+        systems[i].vx += feedback * systems[i].x;
+        systems[i].vy += feedback * systems[i].y;
+        systems[i].vz += feedback * systems[i].z;
+    }
+}
+
+void ensureEnergyConservation(System* systems, int numSystems) {
+    float totalEnergy = 0.0f;
+    for (int i = 0; i < numSystems; i++) {
+        float kineticEnergy = 0.5f * systems[i].mass * (systems[i].vx * systems[i].vx + systems[i].vy * systems[i].vy + systems[i].vz * systems[i].vz);
+        totalEnergy += kineticEnergy;
+        for (int j = i + 1; j < numSystems; j++) {
+            float dx = systems[j].x - systems[i].x;
+            float dy = systems[j].y - systems[i].y;
+            float dz = systems[j].z - systems[i].z;
+            float distance = sqrt(dx * dx + dy * dy + dz * dz);
+            if (distance > 0.01f) {
+                float potentialEnergy = -G * systems[i].mass * systems[j].mass / distance;
+                totalEnergy += potentialEnergy;
+            }
+        }
+    }
+    printf("Total Energy: %f\n", totalEnergy);
 }
 
 int main(int argc, char **argv) {
