@@ -10,16 +10,8 @@
 ## multi dimensional view (inside view)
 
 
-### more depth, less points
-
-
 ![image](https://github.com/mmtmn/zero-dimension-least-resistance-principle-universe-experiment/assets/42742390/f6b24ee4-ac0b-4a4a-86a6-03112936adbf)
 
-
-### less depth, more points
-
-
-![image](https://github.com/mmtmn/zero-dimension-least-resistance-principle-universe-experiment/assets/42742390/effa6459-16e3-43d2-9072-af338edd1c28)
 
 
 ## observations of multi-dimensional.c
