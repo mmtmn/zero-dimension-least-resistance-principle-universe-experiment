@@ -56,4 +56,6 @@
 
 postquantum theory of classical gravity (hypothesis by Jonathan Oppenheim)
 ![image](https://github.com/mmtmn/zero-dimension-least-resistance-principle-universe-experiment/assets/42742390/cc71a6a8-349f-4506-9e78-4cd50a54caef)
+![image](https://github.com/mmtmn/zero-dimension-least-resistance-principle-universe-experiment/assets/42742390/e0502482-06ed-40a5-8b43-68372709c096)
+![image](https://github.com/mmtmn/zero-dimension-least-resistance-principle-universe-experiment/assets/42742390/0845cb6f-8acf-4fa6-a6e8-a924dcc42b37)
 
