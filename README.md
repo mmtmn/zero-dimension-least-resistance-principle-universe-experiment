@@ -6,7 +6,6 @@
 ![image](https://github.com/mmtmn/zero-dimension-least-resistance-principle-universe-experiment/assets/42742390/e2804a69-54c1-4086-8492-6f29a843d55e)
 ![image](https://github.com/mmtmn/zero-dimension-least-resistance-principle-universe-experiment/assets/42742390/971f8550-9e4a-4b1a-a417-9c7892b0e6bc)
 ![image](https://github.com/mmtmn/zero-dimension-least-resistance-principle-universe-experiment/assets/42742390/fe63eb0d-d32d-442f-9ba2-9a5bb9254e17)
-![image](https://github.com/mmtmn/zero-dimension-least-resistance-principle-universe-experiment/assets/42742390/03078a10-c6a3-47f5-a33d-585c7e7c747f)
 
 ## multi dimensional view (inside view)
 
