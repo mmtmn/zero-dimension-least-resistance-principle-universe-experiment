@@ -42,6 +42,7 @@
 ![image](https://github.com/mmtmn/zero-dimension-least-resistance-principle-universe-experiment/assets/42742390/df021ac3-9e75-47a7-aab8-ff7f59d2936e)
 - gcc -o multi-dimensional-with-gravity multi-dimensional-with-gravity.c -lGL -lGLU -lglut -lm
 - ./multi-dimensional-with-gravity
+  
 DISCLAIMER: Adding gravity here didn't make sense to me, at the end I found a really cool theory I ended up coding!
 
 
@@ -59,6 +60,7 @@ DISCLAIMER: Adding gravity here didn't make sense to me, at the end I found a re
 ![image](https://github.com/mmtmn/zero-dimension-least-resistance-principle-universe-experiment/assets/42742390/cc71a6a8-349f-4506-9e78-4cd50a54caef)
 ![image](https://github.com/mmtmn/zero-dimension-least-resistance-principle-universe-experiment/assets/42742390/e0502482-06ed-40a5-8b43-68372709c096)
 ![image](https://github.com/mmtmn/zero-dimension-least-resistance-principle-universe-experiment/assets/42742390/0845cb6f-8acf-4fa6-a6e8-a924dcc42b37)
+
 DISCLAIMER: I ended creating a new repository for this theory, it was too interesting, needed more attention to be more accurate to the research paper and ended up becoming 500+ lines of C code!
 
 [You can check the complete version of the postquantum theory of gravity here!](https://github.com/mmtmn/Jonathan-Oppenheim-s-Postquantum-Theory-of-Classical-Gravity)
