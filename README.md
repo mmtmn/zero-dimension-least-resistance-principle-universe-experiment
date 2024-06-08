@@ -12,3 +12,4 @@
 ![image](https://github.com/mmtmn/zero-dimension-least-resistance-principle-universe-experiment/assets/42742390/fe63eb0d-d32d-442f-9ba2-9a5bb9254e17)
 
 
+gcc -o multi-dimensional multi-dimensional.c -lGL -lGLU -lglut -lm
