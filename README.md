@@ -2,21 +2,21 @@
 - gcc -o multi-dimensional multi-dimensional.c -lGL -lGLU -lglut -lm
 - ./multi-dimensional
 
-## multi dimensional view (outside view)
+## multi dimensional view (outside view) (no gravity)
 ![image](https://github.com/mmtmn/zero-dimension-least-resistance-principle-universe-experiment/assets/42742390/e2804a69-54c1-4086-8492-6f29a843d55e)
 ![image](https://github.com/mmtmn/zero-dimension-least-resistance-principle-universe-experiment/assets/42742390/971f8550-9e4a-4b1a-a417-9c7892b0e6bc)
 ![image](https://github.com/mmtmn/zero-dimension-least-resistance-principle-universe-experiment/assets/42742390/fe63eb0d-d32d-442f-9ba2-9a5bb9254e17)
 
-## multi dimensional view (inside view)
+## multi dimensional view (inside view) (no gravity)
 
 
-### more depth, less points
+### more depth, less points (no gravity)
 
 
 ![image](https://github.com/mmtmn/zero-dimension-least-resistance-principle-universe-experiment/assets/42742390/f6b24ee4-ac0b-4a4a-86a6-03112936adbf)
 
 
-### less depth, more points
+### less depth, more points (no gravity)
 
 
 ![image](https://github.com/mmtmn/zero-dimension-least-resistance-principle-universe-experiment/assets/42742390/effa6459-16e3-43d2-9072-af338edd1c28)
