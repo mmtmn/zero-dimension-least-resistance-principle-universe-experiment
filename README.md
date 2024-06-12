@@ -23,11 +23,15 @@ or
 - less points = more web like view
 
 
+## video
+[Screencast from 2024-06-11 20-06-39.webm](https://github.com/mmtmn/zero-dimension-least-resistance-principle-universe-experiment/assets/42742390/3d73e258-6f66-4d8b-a4c4-82390714892f)
+[Screencast from 2024-06-11 20-10-29.webm](https://github.com/mmtmn/zero-dimension-least-resistance-principle-universe-experiment/assets/42742390/1331ff5d-380b-4c90-8687-8deecb0cbb83)
+
+
+
 ### control commands:
 - awsd to move
-- move mouse to rotate
-- q goes down
-- e goes up
+
 
 
 ### warning:
