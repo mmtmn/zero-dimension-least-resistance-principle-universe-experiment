@@ -1,6 +1,10 @@
 # multi-dimensional.c
-- gcc -o multi-dimensional-no-gravity multi-dimensional-no-gravity.c -lGL -lGLU -lglut -lm
-- ./multi-dimensional-no-gravity
+- gcc -o main main.c -lGL -lGLU -lglut -lm
+- ./main
+
+or
+
+- gcc -o main main.c -lGL -lGLU -lglut -lm;./main
 
 ## outside view
 ![image](https://github.com/mmtmn/zero-dimension-least-resistance-principle-universe-experiment/assets/42742390/e2804a69-54c1-4086-8492-6f29a843d55e)

@@ -8,8 +8,8 @@
 #include <string.h> // Include this header for memset
 #include <time.h>
 
-#define MAX_DEPTH 1 // Adjusted for testing
-#define NUM_POINTS 10 // Adjusted for testing
+#define MAX_DEPTH 3 // Adjusted for testing
+#define NUM_POINTS 100 // Adjusted for testing
 #define GRAVITY_ZONE_RADIUS 5.0f
 #define MAX_SPEED 0.05f
 #define STRONG_FORCE_CONSTANT 0.001f

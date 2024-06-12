@@ -9,14 +9,10 @@
 #include <time.h>
 
 #define MAX_DEPTH 3 // Adjusted for testing
-#define NUM_POINTS 100 // Adjusted for testing
-#define GRAVITY_ZONE_RADIUS 5.0f
-#define MAX_SPEED 0.05f
-#define STRONG_FORCE_CONSTANT 0.001f
+#define NUM_POINTS 200 // Adjusted for testing
 
 typedef struct {
     float x, y, z;
-    float vx, vy, vz; // Velocity components
 } Point3D;
 
 float cameraX = 0.0f, cameraY = 0.0f, cameraZ = 10.0f;
@@ -36,7 +32,6 @@ Node* createNode(Point3D point, int depth);
 void generatePoints(Node* node);
 void drawNode(Node* node);
 void drawLine(Point3D p1, Point3D p2);
-void updateNode(Node* node, Node* root);
 
 Node* root;
 
@@ -45,7 +40,7 @@ void init(void) {
     glShadeModel(GL_FLAT);
     glEnable(GL_DEPTH_TEST);
     srand(time(NULL)); // Initialize random seed only once
-    Point3D start = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+    Point3D start = {0.0, 0.0, 0.0};
     root = createNode(start, 0);
     generatePoints(root);
     glutSetCursor(GLUT_CURSOR_NONE);
@@ -77,7 +72,7 @@ void generatePoints(Node* node) {
         float y = node->point.y + sin(phi) * sin(theta);
         float z = node->point.z + cos(phi);
 
-        Point3D newPoint = {x, y, z, 0.0f, 0.0f, 0.0f};
+        Point3D newPoint = {x, y, z};
         node->children[i] = createNode(newPoint, node->depth + 1);
         generatePoints(node->children[i]);
     }
@@ -97,51 +92,6 @@ void drawNode(Node* node) {
         if (node->children[i] != NULL) {
             drawLine(node->point, node->children[i]->point);
             drawNode(node->children[i]);
-        }
-    }
-}
-
-void applyForces(Node* node, Node* other) {
-    // Calculate distance between nodes
-    float dx = other->point.x - node->point.x;
-    float dy = other->point.y - node->point.y;
-    float dz = other->point.z - node->point.z;
-    float distance = sqrt(dx*dx + dy*dy + dz*dz);
-
-    // Apply strong nuclear force if within gravity zone
-    if (distance < GRAVITY_ZONE_RADIUS) {
-        float force = STRONG_FORCE_CONSTANT / (distance * distance);
-        node->point.vx += force * dx / distance;
-        node->point.vy += force * dy / distance;
-        node->point.vz += force * dz / distance;
-    }
-}
-
-void updateVelocity(Node* node) {
-    // Limit speed
-    float speed = sqrt(node->point.vx * node->point.vx + node->point.vy * node->point.vy + node->point.vz * node->point.vz);
-    if (speed > MAX_SPEED) {
-        node->point.vx = (node->point.vx / speed) * MAX_SPEED;
-        node->point.vy = (node->point.vy / speed) * MAX_SPEED;
-        node->point.vz = (node->point.vz / speed) * MAX_SPEED;
-    }
-
-    // Update position
-    node->point.x += node->point.vx;
-    node->point.y += node->point.vy;
-    node->point.z += node->point.vz;
-}
-
-void updateNode(Node* node, Node* root) {
-    if (node->depth >= MAX_DEPTH) return;
-
-    // Apply forces with respect to all other nodes in the structure
-    #pragma omp parallel for
-    for (int i = 0; i < NUM_POINTS; i++) {
-        if (node->children[i] != NULL) {
-            applyForces(node, root);
-            updateVelocity(node->children[i]);
-            updateNode(node->children[i], root);
         }
     }
 }
@@ -204,8 +154,6 @@ void updateCameraPosition() {
 
 void idle() {
     updateCameraPosition();
-    updateNode(root, root);
-    glutPostRedisplay();
 }
 
 int main(int argc, char **argv) {
