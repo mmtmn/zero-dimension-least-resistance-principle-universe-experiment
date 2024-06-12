@@ -5,9 +5,10 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h> // Include this header for memset
 
 #define MAX_DEPTH 3 // Adjusted for testing
-#define NUM_POINTS 20 // Adjusted for testing
+#define NUM_POINTS 100 // Adjusted for testing
 
 typedef struct {
     float x, y, z;
@@ -147,7 +148,7 @@ int main(int argc, char **argv) {
     glutReshapeFunc(reshape);
     glutKeyboardFunc(keyboardDown);
     glutKeyboardUpFunc(keyboardUp);
-    glutPassiveMotionFunc(mouseMovement);
+    
     glutIdleFunc(idle);
     glutMainLoop();
     return 0;
