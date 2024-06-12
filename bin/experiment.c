@@ -5,32 +5,34 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <string.h> // Include this header for memset
+#include <string.h>
 #include <time.h>
 
 #define MAX_DEPTH 3 // Adjusted for testing
-#define NUM_POINTS 100 // Adjusted for testing
+#define NUM_POINTS 50 // Adjusted for testing
 #define GRAVITY_ZONE_RADIUS 5.0f
-#define MAX_SPEED 0.05f
+#define MAX_SPEED 0.0005f
 #define STRONG_FORCE_CONSTANT 0.001f
+#define SPEED_OF_LIGHT 299792458 // Speed of light in meters per second
 
 typedef struct {
     float x, y, z;
     float vx, vy, vz; // Velocity components
+    float mass; // Mass of the point
 } Point3D;
-
-float cameraX = 0.0f, cameraY = 0.0f, cameraZ = 10.0f;
-float cameraYaw = 0.0f, cameraPitch = 0.0f;
-float cameraSpeed = 0.1f;
-int lastMouseX, lastMouseY;
-
-int keys[256];
 
 typedef struct Node {
     Point3D point;
     struct Node* children[NUM_POINTS];
     int depth;
 } Node;
+
+float cameraX = 0.0f, cameraY = 0.0f, cameraZ = 5.0f;
+float cameraYaw = 0.0f, cameraPitch = 0.0f;
+float cameraSpeed = 0.1f;
+int lastMouseX, lastMouseY;
+
+int keys[256];
 
 Node* createNode(Point3D point, int depth);
 void generatePoints(Node* node);
@@ -45,7 +47,7 @@ void init(void) {
     glShadeModel(GL_FLAT);
     glEnable(GL_DEPTH_TEST);
     srand(time(NULL)); // Initialize random seed only once
-    Point3D start = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+    Point3D start = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0}; // Initialize with mass = 1.0
     root = createNode(start, 0);
     generatePoints(root);
     glutSetCursor(GLUT_CURSOR_NONE);
@@ -77,7 +79,9 @@ void generatePoints(Node* node) {
         float y = node->point.y + sin(phi) * sin(theta);
         float z = node->point.z + cos(phi);
 
-        Point3D newPoint = {x, y, z, 0.0f, 0.0f, 0.0f};
+        float mass = ((float)rand() / RAND_MAX) * 10.0f; // Random mass between 0 and 10
+
+        Point3D newPoint = {x, y, z, 0.0f, 0.0f, 0.0f, mass};
         node->children[i] = createNode(newPoint, node->depth + 1);
         generatePoints(node->children[i]);
     }
@@ -132,6 +136,11 @@ void updateVelocity(Node* node) {
     node->point.z += node->point.vz;
 }
 
+float calculateEnergy(Point3D point) {
+    // E = mc^2
+    return point.mass * SPEED_OF_LIGHT * SPEED_OF_LIGHT;
+}
+
 void updateNode(Node* node, Node* root) {
     if (node->depth >= MAX_DEPTH) return;
 
@@ -142,6 +151,10 @@ void updateNode(Node* node, Node* root) {
             applyForces(node, root);
             updateVelocity(node->children[i]);
             updateNode(node->children[i], root);
+
+            // Calculate and print energy for each node (for demonstration)
+            float energy = calculateEnergy(node->children[i]->point);
+            printf("Node at depth %d has energy: %e Joules\n", node->children[i]->depth, energy);
         }
     }
 }
@@ -167,7 +180,7 @@ void reshape(int w, int h) {
     glViewport(0, 0, (GLsizei)w, (GLsizei)h);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective(60.0, (GLfloat)w / (GLfloat)h, 1.0, 100.0);
+    gluPerspective(60.0, (GLfloat)w / (GLfloat)h, 0.001, 100.0);
     glMatrixMode(GL_MODELVIEW);
 }
 
